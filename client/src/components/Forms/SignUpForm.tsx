@@ -51,7 +51,7 @@ const SignUpForm = () => {
     },
   });
 
-  const postUser = trpc.user.postUser.useMutation({
+  const signup = trpc.user.signup.useMutation({
     onSuccess: () => {
       setToast({ content: "Registration Successful 🎉", error: false });
       reset();
@@ -65,7 +65,7 @@ const SignUpForm = () => {
   });
   const onSubmit = async (data: FieldValues) => {
     console.log(data);
-    const res = await postUser.mutateAsync({
+    const res = await signup.mutateAsync({
       fullName: data.fullName,
       email: data.email,
       password: data.password,
@@ -183,7 +183,7 @@ const SignUpForm = () => {
                   variant="primary"
                   submit
                   fullWidth
-                  loading={isLoading || postUser.isPending}
+                  loading={isLoading || signup.isPending}
                   size="large"
                 >
                   Sign Up

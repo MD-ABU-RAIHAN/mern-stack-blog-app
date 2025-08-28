@@ -6,11 +6,19 @@ import {
   InlineStack,
   Text,
   TextField,
+  Toast,
 } from "@shopify/polaris";
 import { Controller, useForm, type FieldValues } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { trpc } from "../../utils/trpc";
+import { useState } from "react";
 
 const SigninForm = () => {
+  const [loginMessage, setLoginMessage] = useState<{
+    message: string;
+    loginFail: boolean;
+  } | null>(null);
+
   const navigate = useNavigate();
 
   const {
@@ -24,9 +32,36 @@ const SigninForm = () => {
     },
   });
 
-  const onSubmit = (data: FieldValues) => {
-    console.log(data);
+  ////
+
+  const login = trpc.user.login.useMutation({
+    onSuccess: (data) => {
+      setLoginMessage({
+        message: "Login Successful 🎉",
+        loginFail: false,
+      });
+      console.log(data);
+    },
+    onError: (error) => {
+      setLoginMessage({ message: error.message, loginFail: true });
+      console.log(error);
+    },
+  });
+  const onSubmit = async (data: FieldValues) => {
+    const result = await login.mutateAsync({
+      email: data.email,
+      password: data.password,
+    });
+    console.log(result);
   };
+  const dismissToast = () => setLoginMessage(null);
+  const toastMarkup = loginMessage ? (
+    <Toast
+      content={loginMessage.message}
+      error={loginMessage.loginFail}
+      onDismiss={dismissToast}
+    />
+  ) : null;
 
   return (
     <div className="max-w-md mx-auto mt-10">
@@ -54,6 +89,11 @@ const SigninForm = () => {
                 <Controller
                   name="email"
                   control={control}
+                  rules={{
+                    required: "Write your account email",
+                    pattern:
+                      /^[a-zA-Z0-9. _%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                  }}
                   render={({ field }) => (
                     <TextField
                       type="email"
@@ -69,6 +109,9 @@ const SigninForm = () => {
                 <Controller
                   name="password"
                   control={control}
+                  rules={{
+                    required: "Write your password",
+                  }}
                   render={({ field }) => (
                     <TextField
                       type="password"
@@ -81,13 +124,19 @@ const SigninForm = () => {
                     />
                   )}
                 />
-                {/* 
-                  {isLoginFailed && (
-                    <Text as="p" tone="critical" alignment="center">
-                      Login failed. Please check your email and password.
-                    </Text>
-                  )} */}
-                <Button variant="primary" submit fullWidth size="large">
+
+                {loginMessage?.loginFail && (
+                  <Text as="p" tone="critical" alignment="center">
+                    Login failed. Please check your details and try again.
+                  </Text>
+                )}
+                <Button
+                  variant="primary"
+                  loading={login.isPending}
+                  submit
+                  fullWidth
+                  size="large"
+                >
                   Sign In
                 </Button>
                 <Text tone="subdued" alignment="center" as="p">
@@ -104,6 +153,7 @@ const SigninForm = () => {
           </div>
         </BlockStack>
       </Card>
+      {toastMarkup}
     </div>
   );
 };
