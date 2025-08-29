@@ -2,6 +2,7 @@ import z, { email, optional } from "zod";
 import { publicProcedure, router } from "../trpc";
 import UserModel from "../models/UserModels";
 import { TRPCError } from "@trpc/server";
+import { userSign } from "../auth";
 
 const userRouter = router({
   signup: publicProcedure
@@ -40,7 +41,8 @@ const userRouter = router({
         password: z.string().min(2).max(100),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      console.log("Test Token >>", ctx.req.cookies["token"]);
       try {
         const result = await UserModel.findOne({ email: input.email });
         if (!result)
@@ -52,6 +54,15 @@ const userRouter = router({
           });
 
         // jwt token
+        const token = userSign({
+          _id: result._id.toString(),
+          email: result.email,
+          fullName: result.fullName,
+        });
+        // Set cookie in font-end
+        ctx.res.cookie("token", token, {
+          httpOnly: true,
+        });
       } catch (error: any) {
         throw new TRPCError({
           code: error.code,

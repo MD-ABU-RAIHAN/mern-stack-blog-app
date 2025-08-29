@@ -18,6 +18,9 @@ const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
       url: "http://localhost:4010/trpc",
+      fetch(url, options) {
+        return fetch(url, { ...options, credentials: "include" });
+      },
       headers() {
         return {
           authorization: `Bearer ${localStorage.getItem("token")}`,

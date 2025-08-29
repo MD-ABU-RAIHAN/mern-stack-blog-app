@@ -4,6 +4,8 @@ import mongoose from "mongoose";
 
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "./routers";
+import cookieParser from "cookie-parser";
+import { createContext } from "./createContext";
 
 // DB Connection
 (async () => {
@@ -15,15 +17,29 @@ import { appRouter } from "./routers";
 })();
 
 const app = express();
+
+app.use(cookieParser());
+app.all("/", (req, res, next) => {
+  console.log(req.cookies["token"]);
+  next();
+});
 app.use(
   cors({
-    origin: "*",
+    origin: "http://localhost:5173",
     credentials: true,
   })
 );
 
+app.use(express.json());
+
 // tRPC Middleware
-app.use("/trpc", createExpressMiddleware({ router: appRouter }));
+app.use(
+  "/trpc",
+  createExpressMiddleware({
+    router: appRouter,
+    createContext: createContext,
+  })
+);
 
 app.listen(4010, () => {
   console.log("Server is running on http://localhost:4010");
