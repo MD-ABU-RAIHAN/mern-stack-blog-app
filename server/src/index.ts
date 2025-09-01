@@ -7,16 +7,18 @@ import { appRouter } from "./routers";
 import cookieParser from "cookie-parser";
 import { createContext } from "./createContext";
 
+import * as dotenv from "dotenv";
+dotenv.config();
+
 // DB Connection
 (async () => {
-  const res = await mongoose.connect(
-    "mongodb://127.0.0.1:27017/mernStackBlogAppDB"
-  );
+  const res = await
   if (!res) return console.log("DB Connection Failed!");
   console.log("DB Connection Success");
 })();
 
 const app = express();
+const port = process.env.PORT || 4010;
 
 app.use(cookieParser());
 app.all("/", (req, res, next) => {
@@ -41,8 +43,8 @@ app.use(
   })
 );
 
-app.listen(4010, () => {
-  console.log("Server is running on http://localhost:4010");
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
 });
 
 export type AppRouter = typeof appRouter;

@@ -19,8 +19,15 @@ import {
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginSignUpButton from "./Buttons/LoginSignUpButton";
+import { trpc } from "../utils/trpc";
 
 const Navbar = () => {
+  const useAuth = () => {
+    const { data: user } = trpc.user.getCurrentUser.useQuery();
+    console.log("Current User:", user);
+  };
+  useAuth();
+
   const navigate = useNavigate();
 
   const [active, setActive] = useState(false);

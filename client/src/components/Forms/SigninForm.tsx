@@ -35,7 +35,8 @@ const SigninForm = () => {
   ////
 
   const login = trpc.user.login.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log(data);
       setLoginMessage({
         message: "Login Successful 🎉",
         loginFail: false,
